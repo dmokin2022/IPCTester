@@ -5,12 +5,12 @@
 #include <QTcpServer>
 #include <QtNetwork/QTcpSocket>
 
-#include "Configs/StandConfig.h"
+#include "Configs/CameraConfig.h"
 
-class AbstractConnector : public QObject {
+class Connector : public QObject {
   Q_OBJECT
 public:
-  explicit AbstractConnector(
+  explicit Connector(
       QString ip, int port = 1000, QString terminator = "", QObject *parent = nullptr);
 
   void setIp(const QString &ip);

@@ -8,7 +8,7 @@
 #include <QCoreApplication>
 #include <iostream>
 
-#include "Command/CameraCLI.hpp"
+#include "CameraCLI.hpp"
 
 char string[] = "TEST_STRING";
 

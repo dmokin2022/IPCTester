@@ -2,14 +2,14 @@
 
 #include <QObject>
 
-#include "Connector/CameraConnector.hpp"
+#include "Connector.hpp"
 
 class CameraCLI : public QObject {
   Q_OBJECT
 public:
   explicit CameraCLI(int port, QObject *parent = nullptr);
 
-  CameraConnector *connector;
+  Connector *connector;
 
 public slots:
   void parse(const QString incomingString);

@@ -17,14 +17,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Network)
 
-add_executable(IPCTesterCam2
+add_executable(IPCTesterCam
   main.cpp
-  Command/CameraCLI.cpp
-  Command/CameraCLI.hpp
-  Connector/AbstractConnector.cpp
-  Connector/AbstractConnector.hpp
-  Connector/CameraConnector.cpp
-  Connector/CameraConnector.hpp
+  CameraCLI.cpp
+  CameraCLI.hpp
+  Connector.cpp
+  Connector.hpp
+#  Connector/CameraConnector.cpp
+#  Connector/CameraConnector.hpp
 
   Configs/CameraConfig.h
   Configs/StandConfig.h
@@ -32,7 +32,7 @@ add_executable(IPCTesterCam2
   Configs/Thresholds.h
 )
 
-target_link_libraries(IPCTesterCam2 Qt${QT_VERSION_MAJOR}::Core)
-target_link_libraries(IPCTesterCam2 Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Network)
 
-install(TARGETS IPCTesterCam2 DESTINATION /)
+install(TARGETS IPCTesterCam DESTINATION /)

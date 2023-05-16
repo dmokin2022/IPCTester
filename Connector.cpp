@@ -1,16 +1,14 @@
-#include "AbstractConnector.hpp"
-
 #include "Configs/CameraConfig.h"
+#include "Connector.hpp"
 
-AbstractConnector::AbstractConnector(QString ip, int port, QString terminator, QObject *parent)
-    : QObject {parent} {
+Connector::Connector(QString ip, int port, QString terminator, QObject *parent) : QObject {parent} {
   m_ipAddress      = ip;
   m_ipPort         = port;
   stringTerminator = terminator;
 
   tcpServer = new QTcpServer(this);
   //tcpServer->listen(QHostAddress::Any, CAMERA_IP_PORT);
-  connect(tcpServer, &QTcpServer::newConnection, this, &AbstractConnector::slotNewConnection);
+  connect(tcpServer, &QTcpServer::newConnection, this, &Connector::slotNewConnection);
 
   if (!tcpServer->listen(QHostAddress::Any, CAMERA_IP_PORT)) {
     qDebug() << "server is not started";
@@ -26,11 +24,11 @@ AbstractConnector::AbstractConnector(QString ip, int port, QString terminator, Q
   //in->setVersion(QDataStream::Qt_4_0);
 }
 
-void AbstractConnector::setIp(const QString &ip) { m_ipAddress = ip; }
+void Connector::setIp(const QString &ip) { m_ipAddress = ip; }
 
-void AbstractConnector::setPort(int port) { m_ipPort = port; }
+void Connector::setPort(int port) { m_ipPort = port; }
 
-void AbstractConnector::send(QString string) {
+void Connector::send(QString string) {
   //QByteArray array = string.toUtf8() + STAND_COMMAND_TERMINATOR;
   QByteArray array = string.toUtf8() + stringTerminator.toUtf8();
   qDebug() << "Отправлено:" << array;
@@ -38,18 +36,18 @@ void AbstractConnector::send(QString string) {
   emit messageWasTransmitted(string);
 }
 
-void AbstractConnector::slotNewConnection() {
+void Connector::slotNewConnection() {
   tcpSocket = tcpServer->nextPendingConnection();
 
   tcpSocket->write("Hello, World!!! I am echo server!\r\n");
 
-  connect(tcpSocket, &QTcpSocket::readyRead, this, &AbstractConnector::readStringFromBuffer);
-  connect(tcpSocket, &QTcpSocket::disconnected, this, &AbstractConnector::slotClientDisconnected);
+  connect(tcpSocket, &QTcpSocket::readyRead, this, &Connector::readStringFromBuffer);
+  connect(tcpSocket, &QTcpSocket::disconnected, this, &Connector::slotClientDisconnected);
 }
 
-void AbstractConnector::slotClientDisconnected() {}
+void Connector::slotClientDisconnected() {}
 
-QString AbstractConnector::readStringFromBuffer() {
+QString Connector::readStringFromBuffer() {
   QDataStream in(tcpSocket);
 
   QByteArray array = tcpSocket->readAll();

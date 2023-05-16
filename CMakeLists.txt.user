@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 7.0.2, 2023-05-15T17:00:04. -->
+<!-- Written by QtCreator 7.0.2, 2023-05-16T09:25:56. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -157,6 +157,7 @@
        <value type="QString">all</value>
       </valuelist>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
+      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Сборка</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.MakeStep</value>
      </valuemap>
      <value type="qlonglong" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
@@ -170,6 +171,7 @@
        <value type="QString">clean</value>
       </valuelist>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
+      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Сборка</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.MakeStep</value>
      </valuemap>
      <value type="qlonglong" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
@@ -291,7 +293,7 @@
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.1">
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinux.MakeInstall</value>
-      <value type="QString" key="RemoteLinux.MakeInstall.InstallRoot">/home/dmitriy/gdb/</value>
+      <value type="QString" key="RemoteLinux.MakeInstall.InstallRoot">/home/dmitriy/Projects/IPCTester/CameraMount</value>
       <value type="QString" key="RemoteLinux.MakeInstall.Make">/usr/bin/cmake</value>
       <value type="QString" key="RemoteLinux.MakeInstall.MakeArguments">--build /home/dmitriy/Projects/IPCTester/build-IPCTesterCam2-arm_linux_generic_elf_32bit-Debug --target install</value>
       <value type="QString" key="RemoteLinux.MakeInstall.MakeCommand">/usr/bin/cmake</value>
@@ -314,11 +316,11 @@
     <valuelist type="QVariantList" key="CustomOutputParsers"/>
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">IPCTesterCam2 (on %{Device:Name})</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinuxRunConfiguration:IPCTesterCam2</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">IPCTesterCam2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">IPCTesterCam (on %{Device:Name})</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinuxRunConfiguration:IPCTesterCam</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">IPCTesterCam</value>
     <value type="int" key="RemoteLinux.EnvironmentAspect.Version">1</value>
-    <value type="QString" key="RemoteLinux.RunConfig.AlternateRemoteExecutable">/mnt/dev/gdb/IPCTesterCam2</value>
+    <value type="QString" key="RemoteLinux.RunConfig.AlternateRemoteExecutable">/mnt/CameraMount/IPCTesterCam</value>
     <value type="bool" key="RemoteLinux.RunConfig.UseAlternateRemoteExecutable">true</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

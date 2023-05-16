@@ -7,8 +7,8 @@
 
 CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   //
-  connector = new CameraConnector(port, QString(CAMERA_COMMAND_TERMINATOR), parent);
-  connect(connector, &CameraConnector::readyToBeParsed, this, &CameraCLI::parse);
+  connector = new Connector("", port, QString(CAMERA_COMMAND_TERMINATOR), parent);
+  connect(connector, &Connector::readyToBeParsed, this, &CameraCLI::parse);
   responseIsReady = false;
 }
 
