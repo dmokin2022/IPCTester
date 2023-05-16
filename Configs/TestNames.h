@@ -1,0 +1,30 @@
+
+// Текстовые названия для тестов оборудования
+#define FOCUS_TEST_NAME   "FOCUS"
+#define ZOOM_TEST_NAME    "ZOOM"
+#define IRC_TEST_NAME     "IRC"
+#define IRC_TEST_NAME2    "IRC2"
+#define IR_TEST_NAME      "IR"
+#define I2C_TEST_NAME     "I2C"
+#define IRIS_TEST_NAME    "IRIS"
+#define AUDIO_TEST_NAME   "AUDIO"
+#define UART_TEST_NAME    "UART"
+#define ALARM_TEST_NAME   "ALARM"
+#define LED1_TEST_NAME    "LED1"
+#define RESET_TEST_NAME   "RESET"
+#define CURRENT_TEST_NAME "CURRENT"
+
+/*
+#define FOCUS_TEST_NAME "Мотор фокуса"
+#define ZOOM_TEST_NAME "Мотор зума"
+#define IRC_TEST_NAME  "ИК шторка"
+#define IR_TEST_NAME   "ИК подстветка"
+#define I2C_TEST_NAME  "Интерфейс I2C"
+#define IRIS_TEST_NAME "Диафрагма IRIS"
+#define AUDIO_TEST_NAME "Входы выходы звкуа"
+#define UART_TEST_NAME "Интерфейс UART"
+#define ALARM_TEST_NAME "Сигнал тревоги"
+#define LED1_TEST_NAME "Индикатор Ethernet (LED1)"
+#define RESET_TEST_NAME "Сигнал сброса"
+#define CURRENT_TEST_NAME "Ток потребления"
+*/
