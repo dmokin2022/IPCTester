@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cstdlib>
+
 #include "Configs/CameraConfig.h"
 
 CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
@@ -10,53 +12,81 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   connector = new Connector("", port, QString(CAMERA_COMMAND_TERMINATOR), parent);
   connect(connector, &Connector::readyToBeParsed, this, &CameraCLI::parse);
   responseIsReady = false;
+
+  initPwm();
 }
 
-void CameraCLI::parse(const QString incomingString) {
+void CameraCLI::parse(const QString &incomingString) {
   QStringList tokens = incomingString.split(" ");
-  QString command    = tokens[0];
-  QString module     = tokens[1];
-  int channel        = tokens[2].toInt();
-  int value          = tokens[3].toInt();
-  QString string     = tokens[3];
+  if (tokens.size() < CAMERA_WORDS_IN_RESPONSE) {
+    unknownCommandResponse();
+    return;
+  }
 
-  //QString responseString = QString(tokens);
+  QString command = tokens[0];
+  QString module  = tokens[1];
+  int channel     = tokens[2].toInt();
+  int value       = 0;
+  QString string  = "";
 
+  // ------------GET--------------
   if (command == "get") {
-    if (module == "gpio") {
-      getGpio(channel, value);
+    if ((module == "gpio") || (module == "pin")) {
+      value = getGpio(channel);
     } else if (module == "adc") {
-      getAdc(channel, value);
+      value = getAdc(channel);
     }
-    //connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
 
+    // ------------SET--------------
   } else if (command == "set") {
-    if (module == "gpio") {
+    // Проверка на коректность команды set (должно быть 4 слова)
+    if (tokens.size() != CAMERA_WORDS_IN_COMMAND) {
+      unknownCommandResponse();
+      return;
+    }
+
+    value = tokens[3].toInt();
+
+    if (module == "gpio" || module == "pin") {
       setGpio(channel, value);
     } else if (module == "pwm") {
       setPwm(channel, value);
     } else if (module == "dac") {
       setDac(channel, value);
+    } else if (module == "motor") {
+      setMotor(channel, value);
     }
-    //connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
 
+    // ------------SEND-------------
   } else if (command == "send") {
+    // Проверка на коректность команды send (должно быть 4 слова)
+    if (tokens.size() != CAMERA_WORDS_IN_COMMAND) {
+      unknownCommandResponse();
+      return;
+    }
+
+    string = tokens[3];
+
     if (module == "uart") {
       sendUart(0, string);
     } else if (module == "i2c") {
       sendI2c(0, string);
     }
-    //connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
-
+    // -----------RECEIVE-----------
   } else if (command == "receive") {
     if (module == "uart") {
       receiveUart(0, value);
     } else if (module == "i2c") {
       receiveI2c(0, value);
     }
-    //connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
+    // ------ПРОЧИЕ КОМАНДЫ---------
+  } else {
+    //
+    unknownCommandResponse();
   }
 
+  // TODO: Внимание!!! Для разных команд должен быть разный формат ответа
+  // set|get = int value  и send|receive = QString string
   connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
 
   responseIsReady = true;
@@ -68,35 +98,111 @@ void CameraCLI::waitForResponse() {
 }
 
 void CameraCLI::setGpio(int pin, int value) {
-  command = QString("set gpio %1 %2").arg(pin).arg(value);
-  connector->send(command);
+  //  command = QString("set gpio %1 %2").arg(pin).arg(value);
+  exec(QString("echo %1 > /sys/class/gpio/gpio%2/value").arg(value).arg(pin));
 }
 
-int CameraCLI::getGpio(int pin, int &value) {
-  command = QString("get gpio %1 %2").arg(pin);
-  intVal  = &value;
-  connector->send(command);
+int CameraCLI::getGpio(int pin) {
+  FILE *FileOpen;
+  char buffer[] = "################";
+
+  QString fileName = QString("cat /sys/class/gpio/gpio%1/value").arg(pin);
+
+  FileOpen = popen(fileName.toStdString().c_str(), "r");
+  while (fgets(buffer, sizeof(buffer), FileOpen)) { puts(buffer); }
+
+  qDebug() << buffer;
+
+  if (buffer[0] == '0') return 0;
+  if (buffer[0] == '1') return 1;
+  return -1;
+}
+
+int CameraCLI::getAdc(int channel) {
+  //command = QString("get adc %1").arg(channel);
   return 0;
 }
 
-int CameraCLI::getAdc(int channel, int &value) {
-  command = QString("get adc %1").arg(channel);
-  intVal  = &value;
-  connector->send(command);
-  return 0;
+int CameraCLI::writeToDeviceFile(const QString &deviceFilePath, int value) {
+  QString valueStr = QString::number(value);
+
+  int file = open(deviceFilePath.toStdString().c_str(), O_RDWR);
+  write(file, valueStr.toStdString().c_str(), valueStr.size());
+  return file;
 }
 
-void CameraCLI::setPwm(int pin, int value) {
-  command = QString("set pwm %1 %2").arg(pin).arg(value);
-  connector->send(command);
+void CameraCLI::writeToDeviceFileAndClose(const QString &deviceFilePath, int value) {
+  int file = writeToDeviceFile(deviceFilePath, value);
+  close(file);
+}
+
+void CameraCLI::initPwm() {
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IRIS_PWM));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IR_BL));
+}
+
+void CameraCLI::initGPIO() {
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_PLUS));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_MINUS));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_IN));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_OUT));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(LED1));
+}
+
+void CameraCLI::exec(const QString &command) {
+  //
+  system(command.toStdString().c_str());
+}
+
+void CameraCLI::setPwm(int channel, int valuePercent) {
+  /*
+  // Как записывать PWM
+  echo 8 > /sys/class/pwm/pwmchip0/export // номер канала
+  echo 400000 > /sys/class/pwm/pwmchip0/pwm8/period // период шим
+  echo 100000 > /sys/class/pwm/pwmchip0/pwm8/duty_cycle // длительность 1 (скважность)
+  echo 1 > /sys/class/pwm/pwmchip0/pwm8/enable  // признак запуска
+  */
+  int value = PWM_PERIOD * valuePercent / 100;
+
+  //exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(channel));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(channel).arg(PWM_PERIOD));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(channel).arg(value));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(channel).arg(1));
+}
+
+void CameraCLI::setMotor(int motorNum, int value) {
+  /*
+   * Как управлять моторами
+  Формат команды:
+  echo "0 2 1 3 4000000 100" > /sys/nic-motor/m0
+  Значения аргументов:
+  1 = A+
+  2 = A-
+  3 = B+
+  4 = B-
+
+  5 = период (наносекунды)
+  6 = количество периодов, в течение которых прокручивать
+
+  /sys/nic-motor/m0 - фокус
+  /sys/nic-motor/m1 - зум
+*/
+  /*
+  QString deviceFileName = QString("/sys/nic-motor/m%1").arg(motorNum);
+  QString parameter      = QString("0 2 1 3 4000000 %1").arg(value);
+
+  int deviceFile = open(deviceFileName.toStdString().c_str(), O_RDWR);
+  write(deviceFile, parameter.toStdString().c_str(), parameter.size());
+  close(deviceFile);  //закрыть файл
+  */
+  exec(QString("echo \"0 2 1 3 4000000 %1\" > /sys/nic-motor/m%2").arg(value).arg(motorNum));
 }
 
 void CameraCLI::setDac(int pin, int value) {
-  command = QString("get dac %1 %2").arg(pin).arg(value);
-  connector->send(command);
+  //  command = QString("get dac %1 %2").arg(pin).arg(value);
 }
 
-void CameraCLI::sendUart(int uartNum, QString string) {
+void CameraCLI::sendUart(int uartNum, const QString &string) {
   int file = open("/dev/ttyS0", O_RDWR);
   write(file, string.toStdString().c_str(), string.size());
   close(file);  //закрыть файл
@@ -105,75 +211,21 @@ void CameraCLI::sendUart(int uartNum, QString string) {
 QString CameraCLI::receiveUart(int uartNum, int size) {
   int file = open("/dev/ttyS0", O_RDWR);
   read(file, &inputBuffer, size);
-  close(file);  //закрыть файл
+  close(file);
+  return "";
 }
 
-void CameraCLI::sendI2c(int i2cNum, QString string) {
+void CameraCLI::sendI2c(int i2cNum, const QString &string) {
   int file = open("/dev/i2c-0", O_RDWR);
   write(file, string.toStdString().c_str(), string.size());
-  close(file);  //закрыть файл
+  close(file);
 }
 
 QString CameraCLI::receiveI2c(int i2cNum, int size) {
   int file = open("/dev/i2c-0", O_RDWR);
   read(file, &inputBuffer, size);
-  close(file);  //закрыть файл
+  close(file);
+  return "";
 }
 
-// Синхронные команды
-void CameraCLI::setGpioSync(int pin, int value) {
-  command = QString("set gpio %1 %2").arg(pin).arg(value);
-  connector->send(command);
-  waitForResponse();
-}
-
-int CameraCLI::getGpioSync(int pin) {
-  command = QString("get gpio %1 %2").arg(pin);
-  connector->send(command);
-  waitForResponse();
-  return responseString.toInt();
-}
-
-int CameraCLI::getAdcSync(int channel) {
-  command = QString("get adc %1").arg(channel);
-  connector->send(command);
-  waitForResponse();
-  return responseString.toInt();
-}
-
-void CameraCLI::setPwmSync(int pin, int value) {
-  command = QString("set pwm %1 %2").arg(pin).arg(value);
-  connector->send(command);
-  waitForResponse();
-}
-
-void CameraCLI::setDacSync(int pin, int value) {
-  command = QString("set dac %1 %2").arg(pin).arg(value);
-  connector->send(command);
-  waitForResponse();
-}
-
-void CameraCLI::sendUartSync(int uartNum, QString string) {
-  command = QString("send uart %1 %2").arg(uartNum).arg(string);
-  connector->send(command);
-}
-
-QString CameraCLI::receiveUartSync(int uartNum) {
-  command = QString("receive uart %1").arg(uartNum);
-  connector->send(command);
-  waitForResponse();
-  return responseString;
-}
-
-void CameraCLI::sendI2cSync(int i2cNum, QString string) {
-  command = QString("send i2c %1 %2").arg(i2cNum).arg(string);
-  connector->send(command);
-  waitForResponse();
-}
-
-QString CameraCLI::receiveI2cSync(int i2cNum) {
-  command = QString("send i2c %1").arg(i2cNum);
-  connector->send(command);
-  waitForResponse();
-  return responseString;
-}
+void CameraCLI::unknownCommandResponse() { connector->send("Unknown command"); }
