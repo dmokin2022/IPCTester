@@ -23,8 +23,9 @@ add_executable(IPCTesterCam
   CameraCLI.hpp
   Connector.cpp
   Connector.hpp
-#  Connector/CameraConnector.cpp
-#  Connector/CameraConnector.hpp
+
+  Drivers/AdcSar.hpp
+  Drivers/AdcSar.cpp
 
   Configs/CameraConfig.h
   Configs/StandConfig.h

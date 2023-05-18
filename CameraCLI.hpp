@@ -2,6 +2,7 @@
 #include <QObject>
 
 #include "Connector.hpp"
+#include "Drivers/AdcSar.hpp"
 
 class CameraCLI : public QObject {
   Q_OBJECT
@@ -35,6 +36,7 @@ private:
   void writeToDeviceFileAndClose(const QString &deviceFilePath, int value);
   void exec(const QString &);
 
+  AdcSar adcSar;
   QString command;
   bool responseIsReady;
   QString responseString;

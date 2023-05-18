@@ -32,7 +32,7 @@ void Connector::send(QString string) {
 void Connector::slotNewConnection() {
   tcpSocket = tcpServer->nextPendingConnection();
 
-  tcpSocket->write("Hello, World!!! I am echo server!\r\n");
+  tcpSocket->write("This is IP-Camera Command Line Interpretator. Enter your command...\r\n");
   qDebug() << "NewConnection";
 
   connect(tcpSocket, &QTcpSocket::readyRead, this, &Connector::readStringFromBuffer);

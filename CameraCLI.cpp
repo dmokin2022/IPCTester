@@ -14,6 +14,8 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   responseIsReady = false;
 
   initPwm();
+  initGPIO();
+  adcSar.Init();
 }
 
 void CameraCLI::parse(const QString &incomingString) {
@@ -119,8 +121,8 @@ int CameraCLI::getGpio(int pin) {
 }
 
 int CameraCLI::getAdc(int channel) {
-  //command = QString("get adc %1").arg(channel);
-  return 0;
+  //
+  return this->adcSar.GetValue(channel);
 }
 
 int CameraCLI::writeToDeviceFile(const QString &deviceFilePath, int value) {
@@ -137,13 +139,13 @@ void CameraCLI::writeToDeviceFileAndClose(const QString &deviceFilePath, int val
 }
 
 void CameraCLI::initPwm() {
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IRIS_PWM));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IR_BL));
+  //exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IRIS_PWM));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(IR_DIM));
 }
 
 void CameraCLI::initGPIO() {
-  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_PLUS));
-  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_MINUS));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_MOTO_PLUS));
+  exec(QString("echo %1 > /sys/class/gpio/export").arg(IRC_MOTO_MINUS));
   exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_IN));
   exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_OUT));
   exec(QString("echo %1 > /sys/class/gpio/export").arg(LED1));
@@ -165,9 +167,9 @@ void CameraCLI::setPwm(int channel, int valuePercent) {
   int value = PWM_PERIOD * valuePercent / 100;
 
   //exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(channel));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(channel).arg(PWM_PERIOD));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(channel).arg(value));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(channel).arg(1));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(PWM_PERIOD).arg(channel));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(value).arg(channel));
+  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(1).arg(channel));
 }
 
 void CameraCLI::setMotor(int motorNum, int value) {

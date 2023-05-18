@@ -15,19 +15,20 @@
 #define CAMERA_WORDS_IN_RESPONSE  3
 
 // Настройки выводов тестируемой камеры
-#define ZOOM_MOTOR  19
-#define FOCUS_MOTOR 22
-#define IRC_PLUS    21
-#define IRC_MINUS   23
-#define IR_BL       20
-#define CAMERA_I2C  1
-#define IRIS_PWM    8
-#define AUDIO_DAC   12
-#define AUDIO_ADC   13
-#define CAMERA_UART 2
-#define ALARM_OUT   10
-#define ALARM_IN    11
-#define LED1        12
+#define ZOOM_MOTOR     0
+#define FOCUS_MOTOR    1
+#define IRC_MOTO_PLUS  78  // Инфракрасная шторка
+#define IRC_MOTO_MINUS 79
+#define IR_DIM         9  // ШИМ подсветки
+#define IR_CDS         2  // АЦП датчика освещённости
+#define CAMERA_I2C     0
+#define IRIS_PWM       -  // Диафрагма IRIS
+#define AUDIO_DAC      -
+#define AUDIO_ADC      -
+#define CAMERA_UART    0
+#define ALARM_IN       65
+#define ALARM_OUT      66
+#define LED1           77
 
 // Значения, выставляемые на ножках для проверки
 #define TEST_AUDIO_DAC_VALUE 512
