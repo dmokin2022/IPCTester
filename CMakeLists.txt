@@ -23,6 +23,8 @@ add_executable(IPCTesterCam
   CameraCLI.hpp
   Connector.cpp
   Connector.hpp
+  AudioOutput.hpp
+  AudioOutput.cpp
 
   Drivers/AdcSar.hpp
   Drivers/AdcSar.cpp
@@ -35,5 +37,29 @@ add_executable(IPCTesterCam
 
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Core)
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Network)
+
+set(SSTAR_337DE ON)
+
+#-----------------------------------------------------------------
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "/opt/arm-toolchain/sigmastar/include")
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "/opt/arm-toolchain/sigmastar/drivers-include")
+if(SSTAR_337DE OR SSTAR_335DE)
+  target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "/opt/arm-toolchain/sigmastar/uclibc/i6b0/static")
+elseif(SSTAR_339G)
+  target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE "/opt/arm-toolchain/sigmastar/glibc/i6e/static")
+endif()
+
+target_link_libraries(${CMAKE_PROJECT_NAME}
+  mi_iqserver mi_sensor mi_vif mi_vpe mi_venc mi_rgn mi_divp mi_vdf mi_shadow
+  OD_LINUX MD_LINUX VG_LINUX mi_ive mi_ai mi_ao mi_isp cus3a ispalgo
+  mi_sys mi_common
+  /opt/arm-toolchain/sigmastar/glibc/i6e/static/libcam_os_wrapper.a
+  cam_fs_wrapper
+  AEC_LINUX AED_LINUX BF_LINUX APC_LINUX SSL_LINUX SRC_LINUX g711 g726
+  liveMedia UsageEnvironment BasicUsageEnvironment groupsock
+  dl pthread)
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-deprecated-enum-enum-conversion")
+#-----------------------------------------------------------------
+
 
 install(TARGETS IPCTesterCam DESTINATION /)
