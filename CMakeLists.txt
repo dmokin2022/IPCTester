@@ -23,11 +23,13 @@ add_executable(IPCTesterCam
   CameraCLI.hpp
   Connector.cpp
   Connector.hpp
-  AudioOutput.hpp
-  AudioOutput.cpp
 
   Drivers/AdcSar.hpp
   Drivers/AdcSar.cpp
+  Drivers/AudioOutput.hpp
+  Drivers/AudioOutput.cpp
+  Drivers/AudioInput.hpp
+  Drivers/AudioInput.cpp
 
   Configs/CameraConfig.h
   Configs/StandConfig.h

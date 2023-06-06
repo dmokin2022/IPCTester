@@ -2,6 +2,7 @@
 
 #include <QObject>
 
+#include "Configs/CameraConfig.h"
 #include "SSC337DE/include/mi_ao.h"
 
 #define AUDIO_BUFFER_SIZE 2048
@@ -11,8 +12,9 @@ class AudioOutput : public QObject {
 public:
   explicit AudioOutput(MI_AUDIO_DEV AoDevId, MI_AO_CHN AoChn, QObject *parent = nullptr);
 
-  void playBuf(void *buf, size_t bufSize);
-  void playSound(double freq, double duration);
+  void playBuf(void *buf, size_t bufSize, int mode);
+  void playSoundSync(double freq, double duration);
+  void playSoundAsync(double freq);
 
   void playWavFile(const QString &WavFilePath);
 
@@ -20,6 +22,10 @@ signals:
 
 private:
   void resetOutputFrame();
+  void sourceOn();
+  void sourceOff();
+  void calcParams();
+
   MI_AUDIO_DEV AoDevId;
   MI_AO_CHN AoChn;
   MI_AUDIO_Attr_t pstAttr;

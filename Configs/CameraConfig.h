@@ -30,7 +30,8 @@
 #define ALARM_OUT      66
 #define LED1           77
 
-// Значения, выставляемые на ножках для проверки
-#define TEST_AUDIO_DAC_VALUE 512
+// Режимы аудио ввода/вывода
+#define AUDIO_BLOCKING_MODE   -1
+#define AUDIO_NOBLOCKING_MODE 0
 
 #define PWM_PERIOD 400000
