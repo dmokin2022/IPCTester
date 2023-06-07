@@ -3,38 +3,8 @@
 #include "SSC337DE/include/mi_sys.h"
 
 AudioInput::AudioInput(MI_AUDIO_DEV AiDevId, MI_AI_CHN AiChn, QObject *parent) : QObject {parent} {
-  /*
-  this->AoDevId = AoDevId;
-  this->AoChn   = AoChn;
-  //AoDevId = 0;
-  //AoChn = 0;
-
-  stAttr.eBitwidth      = E_MI_AUDIO_BIT_WIDTH_16;
-  stAttr.eSamplerate    = E_MI_AUDIO_SAMPLE_RATE_8000;
-  stAttr.eSoundmode     = E_MI_AUDIO_SOUND_MODE_MONO;
-  stAttr.eWorkmode      = E_MI_AUDIO_MODE_I2S_MASTER;
-  stAttr.u32PtNumPerFrm = 2048;
-  //AUDIO_BUFFER_SIZE;
-  stAttr.u32ChnCnt = 1;
-
-  Ts = 1.0 / (double)stAttr.eSamplerate;  // длительность экспозиции одного сэмпла
-
-  int bitWidth = 16 + stAttr.eBitwidth * 8;
-  Amp          = pow(2, bitWidth - 2);
-
-  MI_SYS_Init();
-
-  // set ao public attr
-  ret = MI_AO_SetPubAttr(AoDevId, &stAttr);
-  if (MI_SUCCESS != ret) {
-    printf("set ao %d attr err:0x%x\n", AoDevId, ret);
-  }
-
-  MI_SYS_Exit();
-  */
   this->AiDevId = AiDevId;
   this->AiChn   = AiChn;
-
   //  this->AiDevId = 0;
   //  this->AiChn   = 0;
 
@@ -89,11 +59,26 @@ void AudioInput::writeFromMicTo(void *waveTable, size_t samplesInWave) {
   stTimeOut.tv_usec = 100 * 1000;
   ret               = select(s32Fd + 1, &readFdSet, NULL, NULL, &stTimeOut);
 
+  // Подготовка буфера воспроизведения
+  resetInputFrame();
+  stAiChFrame.eBitwidth    = E_MI_AUDIO_BIT_WIDTH_16;    /* audio frame bitwidth */
+  stAiChFrame.eSoundmode   = E_MI_AUDIO_SOUND_MODE_MONO; /* audio frame momo or stereo mode */
+  stAiChFrame.u32SrcPcmLen = samplesInWave;      // размер буфера звукозаписи
+  stAiChFrame.u32SrcPcmLen = AUDIO_BUFFER_SIZE;  // размер буфера звукозаписи
+  //stAiChFrame.apSrcPcmVirAddr[0] = waveTable;  // указатель на нахождение буфера для канала 0
+  stAiChFrame.apSrcPcmVirAddr[0] = u16Buf;  // указатель на нахождение буфера для канала 0
+  stAiChFrame.apSrcPcmVirAddr[1] = NULL;  // для канала 1 звук не выводится
+
   if (FD_ISSET(s32Fd, &readFdSet)) {
-    ret = MI_AI_GetFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame, 0);
+    // stAecFrame - задаётся если нужно получить подавление обратной связи AEC
+    // AEC - Acoustic Echo Cancellation
+    // в нашем случае это не нужно  => =0
+    //ret = MI_AI_GetFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame, 0);
+    ret = MI_AI_GetFrame(AiDevId, AiChn, &stAiChFrame, NULL, AUDIO_BLOCKING_MODE);
     if (MI_SUCCESS == ret) {
       // do something
-      MI_AI_ReleaseFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame);
+      //MI_AI_ReleaseFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame);
+      MI_AI_ReleaseFrame(AiDevId, AiChn, &stAiChFrame, NULL);
     }
   }
 
@@ -107,4 +92,11 @@ void AudioInput::writeFromMicTo(void *waveTable, size_t samplesInWave) {
   if (MI_SUCCESS != ret) { printf("disable ai %d err:0x%x\n", AiDevId, ret); }
 
   MI_SYS_Exit();
+}
+
+// обнуляем выводной буфер
+void AudioInput::resetInputFrame() {
+  //
+  memset(&u16Buf, 0, sizeof(u16Buf));
+  memset(&stAiChFrame, 0x0, sizeof(MI_AUDIO_Frame_t));
 }

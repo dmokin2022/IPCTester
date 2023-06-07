@@ -2,6 +2,7 @@
 
 #include <QObject>
 
+#include "Configs/CameraConfig.h"
 #include "SSC337DE/include/mi_ai.h"
 
 class AudioInput : public QObject {
@@ -11,9 +12,13 @@ public:
 
   void writeFromMicTo(void *waveTable, size_t samplesInWave);
 
+  MI_U16 u16Buf[AUDIO_BUFFER_SIZE];
 signals:
 
 private:
+  // обнуляем выводной буфер
+  void resetInputFrame();
+
   MI_S32 ret;
   MI_AUDIO_Attr_t stAttr;
   MI_AUDIO_DEV AiDevId = 0;

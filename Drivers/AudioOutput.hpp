@@ -5,8 +5,6 @@
 #include "Configs/CameraConfig.h"
 #include "SSC337DE/include/mi_ao.h"
 
-#define AUDIO_BUFFER_SIZE 2048
-
 class AudioOutput : public QObject {
   Q_OBJECT
 public:

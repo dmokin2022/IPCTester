@@ -11,11 +11,18 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#set(SHARED_LIB ON)
+#set(STATIC_... ON)
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Network)
+
+find_package(QT NAMES Qt6 QT5 REQUIRED COMPONENTS Concurrent)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Concurrent)
+
 
 add_executable(IPCTesterCam
   main.cpp
@@ -30,6 +37,15 @@ add_executable(IPCTesterCam
   Drivers/AudioOutput.cpp
   Drivers/AudioInput.hpp
   Drivers/AudioInput.cpp
+  Drivers/AudioInput2.hpp
+  Drivers/AudioInput2.cpp
+  Drivers/IAudioInput.hpp
+  Drivers/IAudioInput.cpp
+  Drivers/PArch.hpp
+#  Drivers/Arch.hpp
+#  Drivers/Arch.cpp
+  #Drivers/Threads.hpp
+  #Drivers/Threads.cpp
 
   Configs/CameraConfig.h
   Configs/StandConfig.h
@@ -39,6 +55,7 @@ add_executable(IPCTesterCam
 
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Core)
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Concurrent)
 
 set(SSTAR_337DE ON)
 

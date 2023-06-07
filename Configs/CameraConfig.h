@@ -33,5 +33,6 @@
 // Режимы аудио ввода/вывода
 #define AUDIO_BLOCKING_MODE   -1
 #define AUDIO_NOBLOCKING_MODE 0
+#define AUDIO_BUFFER_SIZE     2048  // размер аудио буфера для входа и выхода
 
 #define PWM_PERIOD 400000
