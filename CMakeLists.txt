@@ -37,8 +37,6 @@ add_executable(IPCTesterCam
   Drivers/AudioOutput.cpp
   Drivers/AudioInput.hpp
   Drivers/AudioInput.cpp
-  Drivers/AudioInput2.hpp
-  Drivers/AudioInput2.cpp
   Drivers/IAudioInput.hpp
   Drivers/IAudioInput.cpp
   Drivers/PArch.hpp

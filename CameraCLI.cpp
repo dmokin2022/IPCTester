@@ -16,6 +16,9 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   initPwm();
   initGPIO();
   adcSar.Init();
+  ao = new AudioOutput();
+  ai = new AudioInput();
+  ai->startListening();
 }
 
 void CameraCLI::parse(const QString &incomingString) {
@@ -37,6 +40,8 @@ void CameraCLI::parse(const QString &incomingString) {
       value = getGpio(channel);
     } else if (module == "adc") {
       value = getAdc(channel);
+    } else if (module == "sound") {
+      value = getSound();
     }
 
     // ------------SET--------------
@@ -53,10 +58,10 @@ void CameraCLI::parse(const QString &incomingString) {
       setGpio(channel, value);
     } else if (module == "pwm") {
       setPwm(channel, value);
-    } else if (module == "dac") {
-      setDac(channel, value);
     } else if (module == "motor") {
       setMotor(channel, value);
+    } else if (module == "sound") {
+      setSound(channel, value);
     }
 
     // ------------SEND-------------
@@ -123,6 +128,11 @@ int CameraCLI::getGpio(int pin) {
 int CameraCLI::getAdc(int channel) {
   //
   return this->adcSar.GetValue(channel);
+}
+
+int CameraCLI::getSound() {
+  //
+  return ai->getSoundLevel();
 }
 
 int CameraCLI::writeToDeviceFile(const QString &deviceFilePath, int value) {
@@ -200,7 +210,8 @@ void CameraCLI::setMotor(int motorNum, int value) {
   exec(QString("echo \"0 2 1 3 4000000 %1\" > /sys/nic-motor/m%2").arg(value).arg(motorNum));
 }
 
-void CameraCLI::setDac(int pin, int value) {
+void CameraCLI::setSound(int duration, int freq) {
+  ao->playSoundAsync(freq, duration);
   //  command = QString("get dac %1 %2").arg(pin).arg(value);
 }
 

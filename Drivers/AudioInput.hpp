@@ -1,36 +1,40 @@
 #pragma once
 
-#include <QObject>
+//#include <arch/IAudioInput.hpp>
+//#include <tools/Common.hpp>
 
-#include "Configs/CameraConfig.h"
-#include "SSC337DE/include/mi_ai.h"
+#include <mi_ai.h>
 
-class AudioInput : public QObject {
-  Q_OBJECT
+#include "Drivers/IAudioInput.hpp"
+
+enum class ACodec : int8_t { UNKNOWN = -1, G711A = 0, G711U, G726, AAC, OPUS, COUNT };
+
+class AudioInput : public IAudioInput {
 public:
-  explicit AudioInput(MI_AUDIO_DEV AiDevId, MI_AI_CHN AiChn, QObject *parent = nullptr);
+  AudioInput();
+  ~AudioInput() = default;
 
-  void writeFromMicTo(void *waveTable, size_t samplesInWave);
+  void setACodec(ACodec _codec);
+  void setChannel(uint8_t _chn);
+  void initialize() override;
+  void terminate() override;
+  void startListening();
+  void stopListening();
 
-  MI_U16 u16Buf[AUDIO_BUFFER_SIZE];
-signals:
+  bool setVolume(uint8_t _db) override { return true; }
+  bool setSampleRate(SampleRate _sr) override { return true; }
 
-private:
-  // обнуляем выводной буфер
-  void resetInputFrame();
+  int calcSoundLevel(MI_AUDIO_Frame_t &frame);
+  int getSoundLevel();
 
-  MI_S32 ret;
-  MI_AUDIO_Attr_t stAttr;
-  MI_AUDIO_DEV AiDevId = 0;
-  MI_AI_CHN AiChn      = 0;
-  MI_SYS_ChnPort_t stChnPort;
-  MI_S32 s32Fd;
-
-  fd_set readFdSet;
-
-  struct timeval stTimeOut;
-
-  MI_AUDIO_Frame_t stAiChFrame;
-  MI_AUDIO_AecFrame_t stAecFrame;
-  MI_SYS_ChnPort_t stAiChnOutputPort;
+protected:
+  void start();
+  int soundLevel {0};
+  bool listeningIsOn {false};
+  uint8_t dev_ {0};
+  uint8_t chn_ {0};
+  uint8_t port_ {0};
+  ACodec codec_ {ACodec::UNKNOWN};
+  uint8_t frameDepth {0};
+  uint8_t queueDepth {0};
 };

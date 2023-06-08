@@ -3,6 +3,8 @@
 
 #include "Connector.hpp"
 #include "Drivers/AdcSar.hpp"
+#include "Drivers/AudioInput.hpp"
+#include "Drivers/AudioOutput.hpp"
 
 class CameraCLI : public QObject {
   Q_OBJECT
@@ -22,8 +24,10 @@ public:
   void setGpio(int pin, int value);
   int getGpio(int pin);
   int getAdc(int channel);
+  int getSound();
+
   void setPwm(int channel, int value);
-  void setDac(int pin, int value);
+  void setSound(int duration, int freq);
   void sendUart(int uartNum, const QString &string);
   QString receiveUart(int uartNum, int size);
   void sendI2c(int i2cNum, const QString &string);
@@ -37,6 +41,9 @@ private:
   void exec(const QString &);
 
   AdcSar adcSar;
+  AudioOutput *ao;
+  AudioInput *ai;
+
   QString command;
   bool responseIsReady;
   QString responseString;

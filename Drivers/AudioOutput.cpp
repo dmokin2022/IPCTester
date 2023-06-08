@@ -2,15 +2,17 @@
 
 #include <math.h>
 
+#include <thread>
+
 #include "SSC337DE/include/mi_sys.h"
 #include "qdebug.h"
 
 AudioOutput::AudioOutput(MI_AUDIO_DEV AoDevId, MI_AO_CHN AoChn, QObject *parent)
     : QObject {parent} {
+  playingIsOn = false;
+
   this->AoDevId = AoDevId;
   this->AoChn   = AoChn;
-  //AoDevId = 0;
-  //AoChn = 0;
 
   stAttr.eBitwidth      = E_MI_AUDIO_BIT_WIDTH_16;
   stAttr.eSamplerate    = E_MI_AUDIO_SAMPLE_RATE_8000;
@@ -50,7 +52,7 @@ void AudioOutput::playBuf(void *buf, size_t bufSize, int mode) {
   } while (ret == MI_AO_ERR_NOBUF);
 }
 
-// Воспроизводит заданную частоту синхронно (не блокирует выполнение программы)
+// Воспроизводит заданную частоту синхронно (блокирует выполнение программы)
 void AudioOutput::playSoundSync(double freq, double duration) {
   // Расчёт параметров для генерации сэмплов волны
 
@@ -72,53 +74,38 @@ void AudioOutput::playSoundSync(double freq, double duration) {
 
   sourceOn();
 
+  playingIsOn       = true;
+  playingIsFinished = false;
+
   // Вывод звука в течение заданного времени
   for (int i = 0; i < waves; ++i) {
     // Вывод одного периода волны
     playBuf(&u16Buf, Ns, AUDIO_BLOCKING_MODE);
+    if (playingIsOn == false) break;  // прерывание воспроизведения по установленногму извне флагу
   }
 
   sourceOff();
+
+  playingIsFinished = true;
 }
 
-// Воспроизводит заданную частоту асинхронно (блокирует выполнение программы пока воспроизводится частота)
-void AudioOutput::playSoundAsync(double freq) {
-  // Расчёт параметров для генерации сэмплов волны
+void AudioOutput::stopPreviousSound() {
+  playingIsOn = false;
 
-  // Расчёт количества сэмплов
-  double Tf = 1 / freq;  // длительность одной волны (период для заданной частоты)
+  // Ожидание окончания предыдущего воспроизведения
+  while (!playingIsFinished) {}
+}
 
-  double k = 2 * M_PI * (Ts / Tf);  // коэффициент для упрощения расчётов
+// Воспроизводит заданную частоту асинхронно (не блокирует выполнение программы пока воспроизводится частота)
+void AudioOutput::playSoundAsync(double freq, double duration) {
+  stopPreviousSound();
 
-  int samples = 2 * Tf / Ts;  // сколько сэмплов уйдёт на формирование 1-го периода волны
-      // (при одинаковой длине каждого сэмпла)
-
-  // Сколько целых волн вместится в буфер
-  int waves = (int)floor(AUDIO_BUFFER_SIZE / samples);
-
-  int Ns = samples * waves;  // количество сэмплов в записи
-
-  // Заполнение буфера целым количеством волн
-  if (samples < AUDIO_BUFFER_SIZE) {
-    for (int i = 0; i < Ns; ++i) {
-      int sample = Amp * sin(k * i) + Amp;
-      u16Buf[i]  = sample;
-      //qDebug() << sample;
-    }
-  }
-
-  sourceOn();
-
-  // Вывод нескольких периодов волн (сколько уложилось в буфер)
-  //for (int i = 0; i < 100; i++) {
-  //
-  playBuf(&u16Buf, Ns, AUDIO_NOBLOCKING_MODE);
-  //}
-
-  //sourceOff();
+  std::thread playing {[=]() { playSoundSync(freq, duration); }};
+  playing.detach();
 }
 
 void AudioOutput::playWavFile(const QString &WavFilePath) {
+  // TODO:
   // Считываем содержимое аудиофайла в буфер
 
   // Воспроизводим сэмплы из буфера

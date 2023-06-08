@@ -30,7 +30,6 @@ public:
 public:
   virtual void initialize()                  = 0;
   virtual void terminate()                   = 0;
-  virtual void start()                       = 0;
   virtual bool setVolume(uint8_t _db)        = 0;
   virtual bool setSampleRate(SampleRate _sr) = 0;
 
