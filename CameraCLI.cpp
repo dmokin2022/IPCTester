@@ -105,7 +105,8 @@ void CameraCLI::waitForResponse() {
 }
 
 void CameraCLI::setGpio(int pin, int value) {
-  //  command = QString("set gpio %1 %2").arg(pin).arg(value);
+  // Настройка порта на выход
+  exec(QString("echo out > /sys/devices/gpiochip0/gpio/gpio%1/direction").arg(pin));
   exec(QString("echo %1 > /sys/class/gpio/gpio%2/value").arg(value).arg(pin));
 }
 
