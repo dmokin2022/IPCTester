@@ -20,8 +20,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Network)
 
-find_package(QT NAMES Qt6 QT5 REQUIRED COMPONENTS Concurrent)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Concurrent)
+#find_package(QT NAMES Qt6 QT5 REQUIRED COMPONENTS Concurrent)
+#find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Concurrent)
 
 
 add_executable(IPCTesterCam
@@ -53,7 +53,7 @@ add_executable(IPCTesterCam
 
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Core)
 target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Network)
-target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Concurrent)
+#target_link_libraries(IPCTesterCam Qt${QT_VERSION_MAJOR}::Concurrent)
 
 set(SSTAR_337DE ON)
 

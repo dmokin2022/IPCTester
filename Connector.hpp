@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDataStream>
+#include <QNetworkInterface>
 #include <QObject>
 #include <QTcpServer>
 #include <QtNetwork/QTcpSocket>
@@ -15,6 +16,7 @@ public:
 
   void setIp(const QString &ip);
   void setPort(int port);
+  QString getHostIp();
 
   QString m_ipAddress;
   int m_ipPort;

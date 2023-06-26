@@ -13,13 +13,26 @@ Connector::Connector(QString ip, int port, QString terminator, QObject *parent) 
   if (!tcpServer->listen(QHostAddress::Any, CAMERA_IP_PORT)) {
     qDebug() << "server is not started";
   } else {
-    qDebug() << "server is started";
+    qDebug() << "server is started on" << m_ipAddress;
   }
 }
 
 void Connector::setIp(const QString &ip) { m_ipAddress = ip; }
 
 void Connector::setPort(int port) { m_ipPort = port; }
+
+QString Connector::getHostIp() {
+  QList<QHostAddress> list = QNetworkInterface::allAddresses();
+
+  for (auto hostAddress : list) /*int nIter = 0; nIter < list.count(); nIter++)*/ {
+    if (!hostAddress.isLoopback())
+      if (hostAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+        qDebug() << hostAddress.toString();
+        return hostAddress.toString();
+      }
+  }
+  return "";
+}
 
 void Connector::send(QString string) {
   //QByteArray array = string.toUtf8() + STAND_COMMAND_TERMINATOR;
@@ -33,13 +46,16 @@ void Connector::slotNewConnection() {
   tcpSocket = tcpServer->nextPendingConnection();
 
   tcpSocket->write("This is IP-Camera Command Line Interpretator. Enter your command...\r\n");
-  qDebug() << "NewConnection";
+  qDebug() << "NewConnection with" << getHostIp();
 
   connect(tcpSocket, &QTcpSocket::readyRead, this, &Connector::readStringFromBuffer);
   connect(tcpSocket, &QTcpSocket::disconnected, this, &Connector::slotClientDisconnected);
 }
 
-void Connector::slotClientDisconnected() {}
+void Connector::slotClientDisconnected() {
+  //
+  qDebug() << "Connection closed with" << getHostIp();
+}
 
 QString Connector::readStringFromBuffer() {
   QByteArray array = tcpSocket->readAll();

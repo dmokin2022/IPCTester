@@ -1,6 +1,7 @@
 #include "CameraCLI.hpp"
 
 #include <fcntl.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -16,6 +17,9 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   initPwm();
   initGPIO();
   adcSar.Init();
+  initSD();
+  testString = "This string must be writen to SD-card and then be read from it";
+
   ao = new AudioOutput();
   ai = new AudioInput();
   ai->startListening();
@@ -28,20 +32,27 @@ void CameraCLI::parse(const QString &incomingString) {
     return;
   }
 
-  QString command = tokens[0];
-  QString module  = tokens[1];
-  int channel     = tokens[2].toInt();
-  int value       = 0;
-  QString string  = "";
+  QString command    = tokens[0];
+  QString module     = tokens[1];
+  int channel        = tokens[2].toInt();
+  QString channelStr = tokens[2];
+  int value          = 0;
+  QString string     = "";
 
   // ------------GET--------------
   if (command == "get") {
     if ((module == "gpio") || (module == "pin")) {
-      value = getGpio(channel);
+      value  = getGpio(channel);
+      string = QString::number(value);
     } else if (module == "adc") {
-      value = getAdc(channel);
+      value  = getAdc(channel);
+      string = QString::number(value);
     } else if (module == "sound") {
-      value = getSound();
+      value  = getSound();
+      string = QString::number(value);
+    } else if (module == "sd") {
+      QString fileName = tokens[2];
+      string           = readSD(fileName);
     }
 
     // ------------SET--------------
@@ -52,7 +63,8 @@ void CameraCLI::parse(const QString &incomingString) {
       return;
     }
 
-    value = tokens[3].toInt();
+    value  = tokens[3].toInt();
+    string = QString::number(value);
 
     if (module == "gpio" || module == "pin") {
       setGpio(channel, value);
@@ -61,7 +73,12 @@ void CameraCLI::parse(const QString &incomingString) {
     } else if (module == "motor") {
       setMotor(channel, value);
     } else if (module == "sound") {
-      setSound(channel, value);
+      int duration = channel;
+      setSound(duration, value);
+    } else if (module == "sd") {
+      QString fileName = tokens[2];
+      QString content  = tokens[3];
+      writeSD(fileName, content);
     }
 
     // ------------SEND-------------
@@ -94,7 +111,7 @@ void CameraCLI::parse(const QString &incomingString) {
 
   // TODO: Внимание!!! Для разных команд должен быть разный формат ответа
   // set|get = int value  и send|receive = QString string
-  connector->send(QString("%1 %2 %3").arg(module).arg(channel).arg(value));
+  connector->send(QString("%1 %2 %3").arg(module).arg(channelStr).arg(string));
 
   responseIsReady = true;
 }
@@ -136,6 +153,27 @@ int CameraCLI::getSound() {
   return ai->getSoundLevel();
 }
 
+void CameraCLI::writeSD(const QString &fileName, const QString &content) {
+  //QString fullPath = QString("/mnt/sd/%1").arg(fileName);
+  //  int file         = open(fullPath.toStdString().c_str(), O_RDWR);
+  //  write(file, content.toStdString().c_str(), content.size());
+  //  //fflush(file);
+  //  qDebug() << file << fullPath.toStdString().c_str() << content.toStdString().c_str();
+  //  close(file);
+  exec(QString("echo \"%1\" > /mnt/sd/%2").arg(content).arg(fileName));
+}
+
+QString CameraCLI::readSD(const QString &fileName) {
+  QString fullPath = QString("/mnt/sd/%1").arg(fileName);
+  int file         = open(fullPath.toStdString().c_str(), O_RDONLY);
+  int size         = read(file, inputBuffer, MAX_FILE_SIZE);
+  close(file);
+  inputBuffer[size] = 0;
+  QString content   = QString(QLatin1String(inputBuffer));
+
+  return content;
+}
+
 int CameraCLI::writeToDeviceFile(const QString &deviceFilePath, int value) {
   QString valueStr = QString::number(value);
 
@@ -160,6 +198,11 @@ void CameraCLI::initGPIO() {
   exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_IN));
   exec(QString("echo %1 > /sys/class/gpio/export").arg(ALARM_OUT));
   exec(QString("echo %1 > /sys/class/gpio/export").arg(LED1));
+}
+
+void CameraCLI::initSD() {
+  exec(QString("mkdir /mnt/sd"));
+  exec(QString("mount -t vfat /dev/mmcblk0p1 /mnt/sd"));
 }
 
 void CameraCLI::exec(const QString &command) {

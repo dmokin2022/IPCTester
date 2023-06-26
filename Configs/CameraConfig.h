@@ -28,7 +28,7 @@
 #define CAMERA_UART    0
 #define ALARM_IN       65
 #define ALARM_OUT      66
-#define LED1           77
+#define LED1           76
 
 // Режимы аудио ввода/вывода
 #define AUDIO_BLOCKING_MODE   -1
@@ -36,3 +36,5 @@
 #define AUDIO_BUFFER_SIZE     2048  // размер аудио буфера для входа и выхода
 
 #define PWM_PERIOD 400000
+
+#define MAX_FILE_SIZE 1000
