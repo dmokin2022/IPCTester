@@ -10,8 +10,6 @@
 #include <iostream>
 
 #include "CameraCLI.hpp"
-#include "Drivers/AudioInput.hpp"
-#include "Drivers/AudioOutput.hpp"
 
 int main(int argc, char *argv[]) {
   QCoreApplication a(argc, argv);

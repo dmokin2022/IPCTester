@@ -20,8 +20,9 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   initSD();
   testString = "This string must be writen to SD-card and then be read from it";
 
-  ao = new AudioOutput();
-  ai = new AudioInput();
+  i2c = new I2C();
+  ao  = new AudioOutput();
+  ai  = new AudioInput();
   ai->startListening();
 }
 
@@ -273,16 +274,22 @@ QString CameraCLI::receiveUart(int uartNum, int size) {
 }
 
 void CameraCLI::sendI2c(int i2cNum, const QString &string) {
-  int file = open("/dev/i2c-0", O_RDWR);
-  write(file, string.toStdString().c_str(), string.size());
-  close(file);
+  //  int file = open("/dev/i2c-0", O_RDWR);
+  //  write(file, string.toStdString().c_str(), string.size());
+  //  close(file);
+  //unsigned char* c_string = (const char *)string.toStdString().c_str();
+  i2c->write(I2C_SLAVE_ADDRESS, string.toStdString().c_str(), string.size());
 }
 
 QString CameraCLI::receiveI2c(int i2cNum, int size) {
-  int file = open("/dev/i2c-0", O_RDWR);
-  read(file, &inputBuffer, size);
-  close(file);
-  return "";
+  //  int file = open("/dev/i2c-0", O_RDWR);
+  //  read(file, &inputBuffer, size);
+  //  close(file);
+  //  return "";
+  unsigned char buf[100];
+
+  i2c->read(I2C_SLAVE_ADDRESS, buf, size);
+  return QString::fromUtf8((char *)buf);
 }
 
 void CameraCLI::unknownCommandResponse() { connector->send("Unknown command"); }

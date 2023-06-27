@@ -40,8 +40,10 @@ add_executable(IPCTesterCam
   Drivers/IAudioInput.hpp
   Drivers/IAudioInput.cpp
   Drivers/PArch.hpp
-#  Drivers/Arch.hpp
-#  Drivers/Arch.cpp
+  Drivers/I2C.hpp
+  Drivers/I2C.cpp
+  #Drivers/Arch.hpp
+  #Drivers/Arch.cpp
   #Drivers/Threads.hpp
   #Drivers/Threads.cpp
 

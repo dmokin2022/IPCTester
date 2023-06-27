@@ -8,6 +8,7 @@
 #include "Drivers/AdcSar.hpp"
 #include "Drivers/AudioInput.hpp"
 #include "Drivers/AudioOutput.hpp"
+#include "Drivers/I2C.hpp"
 
 class CameraCLI : public QObject {
   Q_OBJECT
@@ -49,6 +50,7 @@ private:
   AdcSar adcSar;
   AudioOutput *ao;
   AudioInput *ai;
+  I2C *i2c;
 
   QString command;
   bool responseIsReady;
