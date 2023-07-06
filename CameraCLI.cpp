@@ -21,9 +21,15 @@ CameraCLI::CameraCLI(int port, QObject *parent) : QObject {parent} {
   testString = "This string must be writen to SD-card and then be read from it";
 
   i2c = new I2C();
-  ao  = new AudioOutput();
-  ai  = new AudioInput();
+  //i2c->write(0x10, "1234", 4);
+  ao = new AudioOutput();
+  ai = new AudioInput();
   ai->startListening();
+
+  // Тестирование периодических пакетов по I2C
+  //timer = new QTimer();
+  //connect(timer, &QTimer::timeout, this, [this]() { i2c->write(0x10, "1234", 4); });
+  //timer->start(500);  // И запустим таймер
 }
 
 void CameraCLI::parse(const QString &incomingString) {
@@ -155,13 +161,13 @@ int CameraCLI::getSound() {
 }
 
 void CameraCLI::writeSD(const QString &fileName, const QString &content) {
-  //QString fullPath = QString("/mnt/sd/%1").arg(fileName);
-  //  int file         = open(fullPath.toStdString().c_str(), O_RDWR);
-  //  write(file, content.toStdString().c_str(), content.size());
-  //  //fflush(file);
-  //  qDebug() << file << fullPath.toStdString().c_str() << content.toStdString().c_str();
-  //  close(file);
-  exec(QString("echo \"%1\" > /mnt/sd/%2").arg(content).arg(fileName));
+  QString fullPath = QString("/mnt/sd/%1").arg(fileName);
+  int file         = open(fullPath.toStdString().c_str(), O_RDWR);
+  write(file, content.toStdString().c_str(), content.size());
+  //fflush(file);
+  qDebug() << file << fullPath.toStdString().c_str() << content.toStdString().c_str();
+  close(file);
+  //exec(QString("echo \"%1\" > /mnt/sd/%2").arg(content).arg(fileName));
 }
 
 QString CameraCLI::readSD(const QString &fileName) {
@@ -219,12 +225,25 @@ void CameraCLI::setPwm(int channel, int valuePercent) {
   echo 100000 > /sys/class/pwm/pwmchip0/pwm8/duty_cycle // длительность 1 (скважность)
   echo 1 > /sys/class/pwm/pwmchip0/pwm8/enable  // признак запуска
   */
+  // Пересчёт из процентов в абсолютные значения
   int value = PWM_PERIOD * valuePercent / 100;
 
   //exec(QString("echo %1 > /sys/class/pwm/pwmchip0/export").arg(channel));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(PWM_PERIOD).arg(channel));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(value).arg(channel));
-  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(1).arg(channel));
+  QString cmd1 =
+      QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(PWM_PERIOD).arg(channel);
+  QString cmd2 =
+      QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(value).arg(channel);
+  QString cmd3 = QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(1).arg(channel);
+  qDebug() << cmd1;
+  qDebug() << cmd2;
+  qDebug() << cmd3;
+
+  //  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/period").arg(PWM_PERIOD).arg(channel));
+  //  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/duty_cycle").arg(value).arg(channel));
+  //  exec(QString("echo %1 > /sys/class/pwm/pwmchip0/pwm%2/enable").arg(1).arg(channel));
+  exec(cmd1);
+  exec(cmd2);
+  exec(cmd3);
 }
 
 void CameraCLI::setMotor(int motorNum, int value) {

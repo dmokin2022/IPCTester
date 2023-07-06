@@ -35,6 +35,6 @@
 #define AUDIO_NOBLOCKING_MODE 0
 #define AUDIO_BUFFER_SIZE     2048  // размер аудио буфера для входа и выхода
 
-#define PWM_PERIOD 400000
+#define PWM_PERIOD 20000
 
 #define MAX_FILE_SIZE 1000

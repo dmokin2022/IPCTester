@@ -3,6 +3,7 @@
 #include <sys/types.h>
 
 #include <QObject>
+#include <QTimer>
 
 #include "Connector.hpp"
 #include "Drivers/AdcSar.hpp"
@@ -51,6 +52,7 @@ private:
   AudioOutput *ao;
   AudioInput *ai;
   I2C *i2c;
+  QTimer *timer;
 
   QString command;
   bool responseIsReady;
